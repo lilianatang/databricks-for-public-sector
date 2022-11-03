@@ -39,3 +39,7 @@ neighborhood_zones_bronze()
 # MAGIC CREATE TABLE IF NOT EXISTS taxi_trips_bronze
 # MAGIC USING DELTA
 # MAGIC LOCATION "/databricks-datasets/nyctaxi/tables/nyctaxi_yellow"
+
+# COMMAND ----------
+
+dbutils.fs.ls("/databricks-datasets/nyctaxi/tables/nyctaxi_yellow")

@@ -27,6 +27,25 @@ def download_neighborhood_zone_data():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC # 1. Bronze Layer Ingestion
+
+# COMMAND ----------
+
+raw_taxi_trips_path = f"/databricks-datasets/nyctaxi/tables/nyctaxi_yellow"
+@dlt.table
+def taxi_trips_bronze_dlt():
+  return (
+    spark.table("delta.`/databricks-datasets/nyctaxi/tables/nyctaxi_yellow`")
+  )
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # 2. Silver Layer Ingestion
+
+# COMMAND ----------
+
 download_neighborhood_zone_data()
 @dlt.table
 def neighborhood_silver_dlt():
@@ -43,22 +62,6 @@ def neighborhood_silver_dlt():
 
 # COMMAND ----------
 
-raw_taxi_trips_path = f"/databricks-datasets/nyctaxi/tables/nyctaxi_yellow"
-@dlt.table
-def taxi_trips_bronze_dlt():
-  return (
-    spark.table("delta.`/databricks-datasets/nyctaxi/tables/nyctaxi_yellow`")
-  )
-
-# COMMAND ----------
-
-def find_optimal_resolution(neighbourhoods):
-  neighbourhoods_mosaic_frame = MosaicFrame(neighbourhoods, "geometry")
-  optimal_resolution = neighbourhoods_mosaic_frame.get_optimal_resolution(sample_fraction=0.75)
-  return optimal_resolution
-
-# COMMAND ----------
-
 @dlt.table
 def taxi_trips_silver_dlt():
     trips_bronze = dlt.read("taxi_trips_bronze_dlt")
@@ -66,6 +69,11 @@ def taxi_trips_silver_dlt():
       .withColumn("pickup_geom", mos.st_astext(mos.st_point(col("pickup_longitude"), col("pickup_latitude"))))
       .withColumn("dropoff_geom", mos.st_astext(mos.st_point(col("dropoff_longitude"), col("dropoff_latitude")))))
     return trips
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # 3. Gold Layer Ingestion
 
 # COMMAND ----------
 
